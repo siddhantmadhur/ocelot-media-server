@@ -308,6 +308,53 @@ func (q *Queries) GetAllMediaLibraries(ctx context.Context) ([]MediaLibrary, err
 	return items, nil
 }
 
+const getAllShows = `-- name: GetAllShows :many
+SELECT id, media_library_id, created_at, file_path, name, media_title, description, cover_url, parent_id, classifier, media_type, external_provider, external_provider_id FROM content_library
+WHERE media_library_id = ? AND media_type = ?
+`
+
+type GetAllShowsParams struct {
+	MediaLibraryID int64
+	MediaType      string
+}
+
+func (q *Queries) GetAllShows(ctx context.Context, arg GetAllShowsParams) ([]ContentLibrary, error) {
+	rows, err := q.db.QueryContext(ctx, getAllShows, arg.MediaLibraryID, arg.MediaType)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ContentLibrary
+	for rows.Next() {
+		var i ContentLibrary
+		if err := rows.Scan(
+			&i.ID,
+			&i.MediaLibraryID,
+			&i.CreatedAt,
+			&i.FilePath,
+			&i.Name,
+			&i.MediaTitle,
+			&i.Description,
+			&i.CoverUrl,
+			&i.ParentID,
+			&i.Classifier,
+			&i.MediaType,
+			&i.ExternalProvider,
+			&i.ExternalProviderID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getContentFromExternalId = `-- name: GetContentFromExternalId :one
 SELECT id, media_library_id, created_at, file_path, name, media_title, description, cover_url, parent_id, classifier, media_type, external_provider, external_provider_id FROM content_library
 WHERE external_provider_id = ?

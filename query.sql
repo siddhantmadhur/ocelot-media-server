@@ -75,3 +75,7 @@ LEFT JOIN media_library
 ON media_library.id = content_library.media_library_id
 WHERE media_library_id = ?;
 
+
+-- name: GetAllShows :many
+SELECT * FROM content_library
+WHERE media_library_id = ? AND media_type = ?;
