@@ -79,3 +79,7 @@ WHERE media_library_id = ?;
 -- name: GetAllShows :many
 SELECT * FROM content_library
 WHERE media_library_id = ? AND media_type = ?;
+
+-- name: GetContentFromParentId :many
+SELECT * FROM content_library
+WHERE parent_id = ?;

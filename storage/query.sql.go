@@ -381,6 +381,48 @@ func (q *Queries) GetContentFromExternalId(ctx context.Context, externalProvider
 	return i, err
 }
 
+const getContentFromParentId = `-- name: GetContentFromParentId :many
+SELECT id, media_library_id, created_at, file_path, name, media_title, description, cover_url, parent_id, classifier, media_type, external_provider, external_provider_id FROM content_library
+WHERE parent_id = ?
+`
+
+func (q *Queries) GetContentFromParentId(ctx context.Context, parentID sql.NullInt64) ([]ContentLibrary, error) {
+	rows, err := q.db.QueryContext(ctx, getContentFromParentId, parentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ContentLibrary
+	for rows.Next() {
+		var i ContentLibrary
+		if err := rows.Scan(
+			&i.ID,
+			&i.MediaLibraryID,
+			&i.CreatedAt,
+			&i.FilePath,
+			&i.Name,
+			&i.MediaTitle,
+			&i.Description,
+			&i.CoverUrl,
+			&i.ParentID,
+			&i.Classifier,
+			&i.MediaType,
+			&i.ExternalProvider,
+			&i.ExternalProviderID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getContentFromPath = `-- name: GetContentFromPath :one
 SELECT id, media_library_id, created_at, file_path, name, media_title, description, cover_url, parent_id, classifier, media_type, external_provider, external_provider_id FROM content_library
 WHERE file_path = ?

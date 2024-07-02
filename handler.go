@@ -30,6 +30,7 @@ func handler(e *echo.Echo, cfg *config.Config) {
 	e.GET("/server/media/library", auth.AuthenticateOrWizard(library.GetLibraryFolders, cfg))
 
 	e.GET("/media/library/:mediaType/content", cfg.Route(library.GetContentFromLibrary))
+	e.GET("/media/library/:mediaId/children", auth.AuthenticateOrWizard(library.GetVideoContentFromMedia, cfg))
 
 	// Auth routes
 	e.POST("/auth/create/user", auth.AuthenticateOrWizard(auth.CreateNewUserRoute, cfg))

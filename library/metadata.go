@@ -4,12 +4,15 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"io/fs"
 	"log"
 	"ocelot/config"
 	"ocelot/content"
 	"ocelot/content/tmdb"
 	"ocelot/storage"
 	"os"
+	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -28,6 +31,11 @@ func ScanMediaFiles(library storage.MediaLibrary, cfg *config.Config) error {
 		return err
 	}
 
+	queryFilter, err := regexp.Compile("^[a-zA-Z0-9_ ]+")
+	if err != nil {
+		return err
+	}
+
 	if library.MediaType == "series" {
 		showFiles, err := os.ReadDir(library.DevicePath)
 		if err != nil {
@@ -39,7 +47,7 @@ func ScanMediaFiles(library storage.MediaLibrary, cfg *config.Config) error {
 				contentFile, err := queries.GetContentFromPath(context.Background(), library.DevicePath+"/"+showFile.Name())
 				if err != nil {
 					results, err := client.SearchShows(content.SearchParam{
-						Query: strings.ReplaceAll(showFile.Name(), ".", " "),
+						Query: queryFilter.FindString(strings.ReplaceAll(showFile.Name(), ".", " ")),
 					})
 					// Could not find show
 					if err != nil || len(results.Results) == 0 {
@@ -75,15 +83,85 @@ func ScanMediaFiles(library storage.MediaLibrary, cfg *config.Config) error {
 						}
 					}
 				}
-				ScanForVideos(library.DevicePath+"/"+showFile.Name(), client, contentFile, library, queries)
+				ScanShowForVideos(library.DevicePath+"/"+showFile.Name(), client, contentFile, library, queries)
 			}
 		}
+	} else if library.MediaType == "movies" {
+		movies, err := os.ReadDir(library.DevicePath)
+
+		if err != nil {
+			return err
+		}
+
+		for _, movie := range movies {
+			if movie.IsDir() {
+
+				childPath := library.DevicePath + "/" + movie.Name()
+				movieContent, err := queries.GetContentFromPath(context.Background(), childPath)
+				if err != nil {
+					results, err := client.SearchMovies(content.SearchParam{
+						Query: queryFilter.FindString(movie.Name()),
+					})
+					if err != nil || len(results.Results) == 0 {
+						//movieContent, err = queries.AddNewContentFile()
+						movieContent, err = queries.AddNewContentFile(context.Background(), storage.AddNewContentFileParams{
+							MediaLibraryID: library.ID,
+							CreatedAt:      time.Now(),
+							FilePath:       childPath,
+							Name:           movie.Name(),
+							MediaTitle:     movie.Name(),
+							Classifier:     "movie",
+							MediaType:      "movies",
+						})
+
+					} else {
+						bestResult := results.Results[0]
+						movieContent, err = queries.AddNewContentFile(context.Background(), storage.AddNewContentFileParams{
+							MediaLibraryID:     library.ID,
+							CreatedAt:          time.Now(),
+							FilePath:           childPath,
+							Name:               movie.Name(),
+							MediaTitle:         bestResult.Title,
+							Description:        sql.NullString{String: bestResult.Overview, Valid: true},
+							CoverUrl:           sql.NullString{String: "https://image.tmdb.org/t/p/w500/" + bestResult.PosterPath, Valid: true},
+							Classifier:         "movie",
+							MediaType:          "movies",
+							ExternalProvider:   sql.NullString{String: "tmdb", Valid: true},
+							ExternalProviderID: sql.NullInt64{Int64: int64(bestResult.Id), Valid: true},
+						})
+					}
+				}
+
+				filepath.WalkDir(childPath, func(path string, d fs.DirEntry, err error) error {
+
+					if d.IsDir() {
+						return nil
+					}
+					_, err = queries.GetContentFromPath(context.Background(), path)
+					if err != nil {
+						_, err = queries.AddNewContentFile(context.Background(), storage.AddNewContentFileParams{
+							MediaLibraryID: library.ID,
+							CreatedAt:      time.Now(),
+							FilePath:       path,
+							Name:           d.Name(),
+							MediaTitle:     d.Name(),
+							MediaType:      "video-stream",
+							Classifier:     "stream",
+							ParentID:       sql.NullInt64{Int64: movieContent.ID, Valid: true},
+						})
+					}
+					return nil
+				})
+
+			}
+		}
+
 	}
 
 	return err
 }
 
-func ScanForVideos(currentPath string, client content.Client, parentLibrary storage.ContentLibrary, mediaLibrary storage.MediaLibrary, queries *storage.Queries) error {
+func ScanShowForVideos(currentPath string, client content.Client, parentLibrary storage.ContentLibrary, mediaLibrary storage.MediaLibrary, queries *storage.Queries) error {
 
 	files, err := os.ReadDir(currentPath)
 	if err != nil {
@@ -93,7 +171,7 @@ func ScanForVideos(currentPath string, client content.Client, parentLibrary stor
 	for _, file := range files {
 		childPath := currentPath + "/" + file.Name()
 		if file.IsDir() {
-			ScanForVideos(childPath, client, parentLibrary, mediaLibrary, queries)
+			ScanShowForVideos(childPath, client, parentLibrary, mediaLibrary, queries)
 		} else {
 			_, err := FFprobe(childPath)
 			if err != nil {
