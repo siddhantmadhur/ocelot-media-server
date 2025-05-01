@@ -3,23 +3,40 @@ package auth
 import (
 	"errors"
 	"log"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
 type User struct {
-	Id                uint   `json:"id" gorm:"primaryKey"`
-	Username          string `json:"username" gorm:"unique;not null"`
-	DisplayName       string `json:"display_name" gorm:"not null"`
-	EncryptedPassword string `json:"-" gorm:"not null"`
-	Permission        int    `json:"permission" gorm:"not null"`
+	Id                uint      `json:"id" gorm:"primaryKey"`
+	Username          string    `json:"username" gorm:"unique;not null"`
+	DisplayName       string    `json:"display_name" gorm:"not null"`
+	EncryptedPassword string    `json:"-" gorm:"not null"`
+	Permission        int       `json:"permission" gorm:"not null"`
+	CreatedAt         time.Time `json:"created_at"`
+}
+
+type Session struct {
+	Id        uint      `json:"id" gorm:"primaryKey"`
+	UserId    uint      `json:"user_id"`
+	User      User      `json:"-"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 func UpdateModels(tx *gorm.DB) error {
 	log.Printf("[AUTH] Auto migrating models to database...\n")
-	err := tx.AutoMigrate(&User{})
-	return err
+
+	userMigrateErr := tx.AutoMigrate(&User{})
+	sessionMigrateErr := tx.AutoMigrate(&User{})
+
+	if userMigrateErr != nil || sessionMigrateErr != nil {
+		log.Printf("[ERROR] Error in migration")
+		return errors.New("Error in migration")
+	}
+
+	return nil
 }
 
 func CreateUser(username string, displayName string, password string) (User, error) {

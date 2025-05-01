@@ -2,6 +2,7 @@ package storage
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"path"
@@ -12,12 +13,20 @@ import (
 
 func CreateConn() (*gorm.DB, error) {
 	persistentDir := os.Getenv("PERSISTENT_DIR")
-	info, err := os.Stat(persistentDir)
-	if err != nil || !info.IsDir() {
-		return nil, errors.New("PERSISTENT_DIR is not valid")
-	}
 	dbPath := path.Clean(persistentDir)
-	log.Printf("[DATABASE] Connecting to \"%s\"...\n", dbPath)
+	info, err := os.Stat(dbPath)
+	if err != nil || !info.IsDir() {
+		if os.IsNotExist(err) == true {
+			err := os.MkdirAll(dbPath, os.ModePerm)
+			if err != nil {
+				return nil, errors.New(fmt.Sprintf("Error: %s\n", err.Error()))
+			}
+		} else {
+			return nil, errors.New(fmt.Sprintf("PERSISTENT_DIR is not valid: (%s)\n Error: %s\n", persistentDir, err.Error()))
+
+		}
+	}
+	log.Printf("[DATABASE] Connecting to \"%s/storage.db\"...\n", dbPath)
 	tx, err := gorm.Open(sqlite.Open(dbPath + "/storage.db"))
 	return tx, err
 }
