@@ -13,8 +13,3 @@ The project can be broken down into multiple stages to reach feature parity with
 - [ ] Dynamic video streaming
 - [ ] Frontend player
 - [ ] Library scanner 
-
-> [!NOTE]
-> I decided to rewrite the project after 1 year of its initial creation as I learned a lot about using Golang and would like to fundamentally change how the project is structured. You can still view the old source code via the `legacy` branch. 
-
-
