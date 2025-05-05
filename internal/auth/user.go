@@ -3,26 +3,17 @@ package auth
 import (
 	"errors"
 	"log"
-	"time"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
 type User struct {
-	Id                uint      `json:"id" gorm:"primaryKey"`
-	Username          string    `json:"username" gorm:"unique;not null"`
-	DisplayName       string    `json:"display_name" gorm:"not null"`
-	EncryptedPassword string    `json:"-" gorm:"not null"`
-	Permission        int       `json:"permission" gorm:"not null"`
-	CreatedAt         time.Time `json:"created_at"`
-}
-
-type Session struct {
-	Id        uint      `json:"id" gorm:"primaryKey"`
-	UserId    uint      `json:"user_id"`
-	User      User      `json:"-"`
-	CreatedAt time.Time `json:"created_at"`
+	gorm.Model
+	Username          string `json:"username" gorm:"unique;not null"`
+	DisplayName       string `json:"display_name" gorm:"not null"`
+	EncryptedPassword string `json:"-" gorm:"not null"`
+	Permission        int    `json:"permission" gorm:"not null"`
 }
 
 func UpdateModels(tx *gorm.DB) error {

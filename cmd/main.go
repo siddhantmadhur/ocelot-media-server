@@ -20,10 +20,13 @@ func main() {
 	var (
 		printVersion  bool
 		persistentDir string = "/etc/opt/ocelot"
+		port          int
 	)
 
 	flag.BoolVar(&printVersion, "v", false, "print software version")
+	flag.BoolVar(&printVersion, "version", false, "print software version")
 	flag.StringVar(&persistentDir, "p", persistentDir, "change persistent directory")
+	flag.IntVar(&port, "o", 8080, "change port for the web server")
 
 	flag.Parse()
 
@@ -40,6 +43,7 @@ func main() {
 			log.Fatalf("Error connecting to database: %s\n", err.Error())
 		}
 
+		// Update models here
 		auth.UpdateModels(tx)
 
 		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
