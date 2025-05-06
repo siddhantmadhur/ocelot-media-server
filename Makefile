@@ -11,3 +11,7 @@ all: lint test build
 
 build: # build the golang binary for this project
 	go build ${BUILD_FLAGS} -ldflags "${GO_LDFLAGS}" -o build/${EXECNAME} ./cmd
+
+test:
+	go test ./...
+
