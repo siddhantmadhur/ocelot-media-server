@@ -6,13 +6,19 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
-type Settings struct {
+type GeneralSettings struct {
 	CompletedSetup bool `json:"completed_setup"`
+}
+
+type Settings struct {
+	General GeneralSettings `json:"general"`
 }
 
 func GetDefaultSettings() Settings {
 	return Settings{
-		CompletedSetup: false,
+		General: GeneralSettings{
+			CompletedSetup: false,
+		},
 	}
 }
 
@@ -30,9 +36,9 @@ func GetSettings() (*Settings, error) {
 		}
 		return nil, err
 	}
-	var s *Settings
-	_, err = toml.Decode(string(b), s)
-	return s, err
+	var s Settings
+	_, err = toml.Decode(string(b), &s)
+	return &s, err
 }
 
 func (s *Settings) Save() error {

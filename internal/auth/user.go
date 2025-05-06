@@ -12,7 +12,7 @@ type User struct {
 	gorm.Model
 	Username          string `json:"username" gorm:"unique;not null"`
 	DisplayName       string `json:"display_name" gorm:"not null"`
-	EncryptedPassword string `json:"-" gorm:"not null"`
+	EncryptedPassword string `json:"encrypted_password" gorm:"not null"`
 	Permission        int    `json:"permission" gorm:"not null"`
 }
 

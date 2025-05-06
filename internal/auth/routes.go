@@ -35,6 +35,14 @@ func CreateUserRoute(c echo.Context) error {
 		})
 	}
 
+	settings, err := storage.GetSettings()
+	if err != nil {
+		return c.JSON(500, ReturnData{
+			"error":   err.Error(),
+			"message": "There was an error in reading the internal settings file",
+		})
+	}
+
 	userCreated, err := CreateUser(newUser.Username, newUser.DisplayName, newUser.Password)
 
 	if users == 0 {
@@ -44,7 +52,21 @@ func CreateUserRoute(c echo.Context) error {
 			"message": "Created user!",
 		})
 	} else {
-		// check if allowed and create sub user
+		if !settings.General.CompletedSetup {
+			var prevUser User
+			tx.First(&prevUser)
+			res := tx.Model(&prevUser).Updates(userCreated)
+			if res.Error != nil {
+				return c.JSON(500, map[string]string{
+					"error": res.Error.Error(),
+				})
+			}
+			return c.JSON(200, map[string]string{
+				"message": "Updated user!",
+			})
+		} else {
+			// TODO: Create a second user if the route is authorized
+		}
 	}
 
 	return c.JSON(201, ReturnData{
