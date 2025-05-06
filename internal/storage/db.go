@@ -11,10 +11,6 @@ import (
 	"gorm.io/gorm"
 )
 
-func CreateConn() (*gorm.DB, error) {
-	return GetConnection()
-}
-
 func GetPersistentDir() (string, error) {
 	persistentDir := os.Getenv("PERSISTENT_DIR")
 	dbPath := path.Clean(persistentDir)

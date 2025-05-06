@@ -15,7 +15,8 @@ type createUserRouteParam struct {
 
 func CreateUserRoute(c echo.Context) error {
 
-	tx, err := storage.CreateConn()
+	tx, err := storage.GetConnection()
+	defer storage.CloseConnection(tx)
 	if err != nil {
 		return c.JSON(500, ReturnData{
 			"error":   err.Error(),

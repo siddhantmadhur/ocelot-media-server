@@ -38,7 +38,8 @@ func main() {
 		fmt.Printf("%s\nversion: %s\n", os.Args[0], internal.Version)
 	} else {
 		log.Printf("[MAIN] Starting server...\n")
-		tx, err := storage.CreateConn()
+		tx, err := storage.GetConnection()
+		defer storage.CloseConnection(tx)
 		if err != nil {
 			log.Fatalf("Error connecting to database: %s\n", err.Error())
 		}
