@@ -50,7 +50,7 @@ func main() {
 		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 		defer stop()
 
-		s := server.NewServer(8080)
+		s := server.NewServer(port)
 		s.Run()
 
 		<-ctx.Done()

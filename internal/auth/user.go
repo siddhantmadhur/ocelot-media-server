@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 
+	"github.com/siddhantmadhur/ocelot-media-server/internal/storage"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -47,4 +48,24 @@ func CreateUser(username string, displayName string, password string) (User, err
 	u.Username = username
 
 	return u, err
+}
+
+// Return a string of the displayname for every user
+func GetAllUsers() ([]string, error) {
+	var usernames []string
+
+	tx, err := storage.GetConnection()
+	defer storage.CloseConnection(tx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	res := tx.Raw("SELECT display_name FROM users").Scan(&usernames)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	return usernames, nil
+
 }

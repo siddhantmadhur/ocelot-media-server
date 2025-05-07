@@ -35,6 +35,7 @@ func NewServer(port int) *Server {
 	// Do routes here
 	e.GET("/health", s.Healthcheck)
 	e.POST("/auth/user/create", auth.CreateUserRoute)
+	e.GET("/users/all", auth.GetAllUsersRoute)
 
 	return &s
 }

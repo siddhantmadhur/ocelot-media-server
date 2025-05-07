@@ -74,3 +74,18 @@ func CreateUserRoute(c echo.Context) error {
 		"message": "Created user!",
 	})
 }
+
+func GetAllUsersRoute(c echo.Context) error {
+	users, err := GetAllUsers()
+	if err != nil {
+		return c.JSON(500, map[string]string{
+			"message": "Failed",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.JSON(200, map[string]any{
+		"message": "Success!",
+		"data":    users,
+	})
+}

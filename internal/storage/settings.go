@@ -10,14 +10,22 @@ type GeneralSettings struct {
 	CompletedSetup bool `json:"completed_setup"`
 }
 
+type ServerSettings struct {
+	Port int `json:"port"`
+}
+
 type Settings struct {
 	General GeneralSettings `json:"general"`
+	Server  ServerSettings
 }
 
 func GetDefaultSettings() Settings {
 	return Settings{
 		General: GeneralSettings{
 			CompletedSetup: false,
+		},
+		Server: ServerSettings{
+			Port: 8080,
 		},
 	}
 }
