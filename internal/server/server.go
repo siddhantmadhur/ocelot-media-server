@@ -27,6 +27,12 @@ func NewServer(port int) *Server {
 		CustomTimeFormat: "2006/01/02 15:04:05",
 	}))
 
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"http://localhost:5173"},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAccessControlAllowOrigin},
+		AllowMethods: []string{"GET", "POST", "DELETE", "PUT"},
+	}))
+
 	var s = Server{
 		Port:    port,
 		Handler: e,

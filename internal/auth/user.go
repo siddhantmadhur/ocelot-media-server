@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/siddhantmadhur/ocelot-media-server/internal/storage"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -68,4 +69,26 @@ func GetAllUsers() ([]string, error) {
 
 	return usernames, nil
 
+}
+
+func LoginUser(username string, password string) (*jwt.Token, error) {
+	var u User
+	tx, err := storage.GetConnection()
+	defer storage.CloseConnection(tx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	res := tx.Raw("SELECT * FROM users WHERE username = ? LIMIT 1", username).Scan(&u)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(u.EncryptedPassword), []byte(password))
+	if err != nil {
+		return nil, errors.New("Password does not match!")
+	}
+
+	return nil, nil
 }
