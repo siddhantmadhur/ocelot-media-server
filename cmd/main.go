@@ -1,7 +1,7 @@
 package main
 
 import (
-	"git.siddhantmadhur.com/ocelot/pkg/api"
+	"git.reocelot.com/ocelot/pkg/api"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )

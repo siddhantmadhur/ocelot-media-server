@@ -1,4 +1,4 @@
-module git.siddhantmadhur.com/ocelot
+module git.reocelot.com/ocelot
 
 go 1.23.0
 
