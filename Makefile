@@ -1,9 +1,9 @@
 # Ocelot Makefile
 
-PKG := git.siddhantmadhur.com/ocelot
+PKG := git.reocelot.com/ocelot
 VERSION ?= $(shell git describe --match 'v[0-9]*' --dirty='.m' --always --tags)
 
-GO_LDFLAGS ?= -w -X ${PKG}/internal.Version=${VERSION}
+GO_LDFLAGS ?= -X ${PKG}/internal.Version=${VERSION}
 BUILD_FLAGS =
 EXECNAME = ocelot
 
