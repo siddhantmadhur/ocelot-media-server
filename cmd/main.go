@@ -14,4 +14,5 @@ func main() {
 	api.RegisterRoute(e)
 
 	e.Logger.Fatal(e.Start(":8080"))
+
 }
