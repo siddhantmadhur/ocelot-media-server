@@ -4,8 +4,7 @@ type User struct {
 	UID               string `json:"uid"`
 	Username          string `json:"username"`
 	DisplayName       string `json:"display_name"`
-	PhotoURL          string `json:"photo_url"`
-	encryptedPassword string
+	EncryptedPassword string `json:"_"`
 }
 
 func (u User) VerifyPassword(s string)            {}

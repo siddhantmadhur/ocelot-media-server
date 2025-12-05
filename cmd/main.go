@@ -21,7 +21,6 @@ func main() {
 
 	if *printVersion {
 		fmt.Printf("%s\n", internal.Version)
-		cleanup()
 		os.Exit(0)
 	}
 
@@ -35,6 +34,5 @@ func main() {
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", *webServerPort)))
 
-	cleanup()
 	os.Exit(0)
 }
